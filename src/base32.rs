@@ -103,23 +103,41 @@ impl ops::Add<u5> for u5 {
     }
 }
 impl ops::AddAssign<u5> for u5 {
-    fn add_assign(&mut self, other: u5) { *self = *self + other; }
+    fn add_assign(&mut self, other: u5) {
+        *self = *self + other;
+    }
 }
 
 impl ops::Mul for u5 {
     type Output = u5;
     fn mul(self, mut other: u5) -> u5 {
         let mut res: u5 = u5(0);
-        if self.0 & 0x01 != 0 { res += other; } other.mul_alpha();
-        if self.0 & 0x02 != 0 { res += other; } other.mul_alpha();
-        if self.0 & 0x04 != 0 { res += other; } other.mul_alpha();
-        if self.0 & 0x08 != 0 { res += other; } other.mul_alpha();
-        if self.0 & 0x10 != 0 { res += other; }
+        if self.0 & 0x01 != 0 {
+            res += other;
+        }
+        other.mul_alpha();
+        if self.0 & 0x02 != 0 {
+            res += other;
+        }
+        other.mul_alpha();
+        if self.0 & 0x04 != 0 {
+            res += other;
+        }
+        other.mul_alpha();
+        if self.0 & 0x08 != 0 {
+            res += other;
+        }
+        other.mul_alpha();
+        if self.0 & 0x10 != 0 {
+            res += other;
+        }
         res
     }
 }
 impl ops::MulAssign<u5> for u5 {
-    fn mul_assign(&mut self, other: u5) { *self = *self * other; }
+    fn mul_assign(&mut self, other: u5) {
+        *self = *self * other;
+    }
 }
 
 /// A GF(32) "bech32" string
@@ -217,7 +235,8 @@ impl str::FromStr for u5String {
 }
 
 impl<I> ops::Index<I> for u5String
-where Vec<u5>: ops::Index<I>
+where
+    Vec<u5>: ops::Index<I>,
 {
     type Output = <Vec<u5> as ops::Index<I>>::Output;
     fn index(&self, idx: I) -> &Self::Output {
@@ -226,10 +245,10 @@ where Vec<u5>: ops::Index<I>
 }
 
 impl<I> ops::IndexMut<I> for u5String
-where Vec<u5>: ops::IndexMut<I>
+where
+    Vec<u5>: ops::IndexMut<I>,
 {
     fn index_mut(&mut self, idx: I) -> &mut Self::Output {
         &mut self.0[idx]
     }
 }
-

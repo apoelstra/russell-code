@@ -1,4 +1,3 @@
-
 pub mod base32;
 pub mod checksum32;
 
@@ -30,11 +29,13 @@ fn real_main(action_s: &str, checksum_s: &str, s: &str) -> String {
 
     match action_s {
         "sum" => checksum.checksum(s),
-        "validate" => if checksum.validate_checksum(s) {
-            "OK".into()
-        } else {
-            "BAD".into()
-        },
+        "validate" => {
+            if checksum.validate_checksum(s) {
+                "OK".into()
+            } else {
+                "BAD".into()
+            }
+        }
         x => panic!("unknown action {x}"),
     }
 }
@@ -58,7 +59,11 @@ mod tests {
             "ms10testsxxxxxxxxxxxxxxxxxxxxxxxxxx4nzvca9cmczlw",
         );
         assert_eq!(
-            real_main("validate", "codex32", "ms10testsxxxxxxxxxxxxxxxxxxxxxxxxxx4nzvca9cmczlw"),
+            real_main(
+                "validate",
+                "codex32",
+                "ms10testsxxxxxxxxxxxxxxxxxxxxxxxxxx4nzvca9cmczlw"
+            ),
             "OK",
         );
     }

@@ -12,7 +12,6 @@
 // If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //
 
-
 /// Checksums
 ///
 /// This file defines the various checksums that we care about for the codex32
@@ -34,7 +33,6 @@
 /// variable with the `gen=` string, replacing the commas with spaces and IMPORTANTLY
 /// dropping the final 1, which is implicit in the Python code.
 ///
-
 use crate::base32::{u5, u5String};
 use std::{collections::HashMap, str::FromStr};
 
@@ -43,8 +41,13 @@ pub fn get_checksums() -> HashMap<&'static str, Checksum> {
     vec![
         ("bech32", Checksum::new("ja45kap", "qqqqqp")),
         ("codex32", Checksum::new("sscmleeeqg3mep", "secretshare32")),
-        ("long-codex32", Checksum::new("hyk9x4hx4ef6e20p", "secretshare32ex")),
-    ].into_iter().collect()
+        (
+            "long-codex32",
+            Checksum::new("hyk9x4hx4ef6e20p", "secretshare32ex"),
+        ),
+    ]
+    .into_iter()
+    .collect()
 }
 
 /// Generic checksum trait
@@ -52,25 +55,28 @@ pub fn get_checksums() -> HashMap<&'static str, Checksum> {
 pub struct Checksum {
     /// Stringified version of the modulus
     modulus: u5String,
-    /// Stringified version of the 
+    /// Stringified version of the
     residue: u5String,
 }
 
 impl Checksum {
     /// Construct a new checksum. This should only be called from the `get_checksums` function
     /// in this file.
-    fn new(modulus_str: &str, residue_str: &str) -> Checksum{
-        assert!(modulus_str.is_ascii(), "Modulus string \"{modulus_str}\" must be ASCII");
-        assert!(residue_str.is_ascii(), "Residue string \"{residue_str}\" must be ASCII");
+    fn new(modulus_str: &str, residue_str: &str) -> Checksum {
+        assert!(
+            modulus_str.is_ascii(),
+            "Modulus string \"{modulus_str}\" must be ASCII"
+        );
+        assert!(
+            residue_str.is_ascii(),
+            "Residue string \"{residue_str}\" must be ASCII"
+        );
         assert_eq!(
             modulus_str.as_bytes()[modulus_str.len() - 1],
             b'p',
             "Modulus string \"{modulus_str}\" should end in 'p'.",
         );
-        assert_eq!(
-            modulus_str.len(),
-            residue_str.len() + 1,
-        );
+        assert_eq!(modulus_str.len(), residue_str.len() + 1,);
 
         let modulus = match u5String::from_str(modulus_str) {
             Ok(s) => s,
@@ -80,10 +86,7 @@ impl Checksum {
             Ok(s) => s,
             Err(e) => panic!("Residue string \"{residue_str}\" was not a u5 string: {e}"),
         };
-        Checksum {
-            modulus,
-            residue,
-        }
+        Checksum { modulus, residue }
     }
 
     /// Compute the residue of a string, plus the target residue
@@ -138,7 +141,10 @@ impl Checksum {
         };
         // 2. Suffix some 0s onto the end, which we will replace by the checksum
         let pre_checksum_len = input.len();
-        println!("len {pre_checksum_len}   residue len {}", self.residue.len());
+        println!(
+            "len {pre_checksum_len}   residue len {}",
+            self.residue.len()
+        );
         for _ in 0..self.residue.len() {
             input.push(u5::from(0));
         }
@@ -183,14 +189,13 @@ impl Checksum for Bech32 {
 }
 */
 
-
 #[cfg(test)]
 mod tests {
     use crate::base32;
 
     #[test]
     fn get_mod_string_long_codex32() {
-        let genbch_str = vec![23,4,22,5,6,21,23,6,21,25,9,26,25,10,15,1];
+        let genbch_str = vec![23, 4, 22, 5, 6, 21, 23, 6, 21, 25, 9, 26, 25, 10, 15, 1];
         assert_eq!(
             base32::u5String::from(genbch_str).to_string(),
             "hyk9x4hx4ef6e20p",
@@ -199,7 +204,7 @@ mod tests {
 
     #[test]
     fn get_mod_string_codex32() {
-        let genbch_str = vec![16,16,24,27,31,25,25,25,0,8,17,27,25,1];
+        let genbch_str = vec![16, 16, 24, 27, 31, 25, 25, 25, 0, 8, 17, 27, 25, 1];
         assert_eq!(
             base32::u5String::from(genbch_str).to_string(),
             "sscmleeeqg3mep",
@@ -208,11 +213,7 @@ mod tests {
 
     #[test]
     fn get_mod_string_bech32() {
-        let genbch_str = vec![18,29,21,20,22,29,1];
-        assert_eq!(
-            base32::u5String::from(genbch_str).to_string(),
-            "ja45kap",
-        );
+        let genbch_str = vec![18, 29, 21, 20, 22, 29, 1];
+        assert_eq!(base32::u5String::from(genbch_str).to_string(), "ja45kap",);
     }
 }
-
