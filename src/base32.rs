@@ -15,7 +15,7 @@
 use std::{fmt, ops, str};
 
 /// Character set in lexicographic order
-pub const CHARSET: &'static [u8; 32] = b"qpzry9x8gf2tvdw0s3jn54khce6mua7l";
+pub const CHARSET: &[u8; 32] = b"qpzry9x8gf2tvdw0s3jn54khce6mua7l";
 
 /// An element of GF(32) constructed as GF(2)[x] mod x^5 + x^3 + 1
 ///
