@@ -35,38 +35,38 @@ impl u5 {
     /// Construct a u5 from a character
     pub fn from_char(c: char) -> Result<Self, String> {
         match c {
-            'q' => Ok(u5(0x00)),
-            'p' => Ok(u5(0x01)),
-            'z' => Ok(u5(0x02)),
-            'r' => Ok(u5(0x03)),
-            'y' => Ok(u5(0x04)),
+            'q' | 'Q' => Ok(u5(0x00)),
+            'p' | 'P' => Ok(u5(0x01)),
+            'z' | 'Z' => Ok(u5(0x02)),
+            'r' | 'R' => Ok(u5(0x03)),
+            'y' | 'Y' => Ok(u5(0x04)),
             '9' => Ok(u5(0x05)),
-            'x' => Ok(u5(0x06)),
+            'x' | 'X' => Ok(u5(0x06)),
             '8' => Ok(u5(0x07)),
-            'g' => Ok(u5(0x08)),
-            'f' => Ok(u5(0x09)),
+            'g' | 'G' => Ok(u5(0x08)),
+            'f' | 'F' => Ok(u5(0x09)),
             '2' => Ok(u5(0x0a)),
-            't' => Ok(u5(0x0b)),
-            'v' => Ok(u5(0x0c)),
-            'd' => Ok(u5(0x0d)),
-            'w' => Ok(u5(0x0e)),
+            't' | 'T' => Ok(u5(0x0b)),
+            'v' | 'V' => Ok(u5(0x0c)),
+            'd' | 'D' => Ok(u5(0x0d)),
+            'w' | 'W' => Ok(u5(0x0e)),
             '0' => Ok(u5(0x0f)),
-            's' => Ok(u5(0x10)),
+            's' | 'S' => Ok(u5(0x10)),
             '3' => Ok(u5(0x11)),
-            'j' => Ok(u5(0x12)),
-            'n' => Ok(u5(0x13)),
+            'j' | 'J' => Ok(u5(0x12)),
+            'n' | 'N' => Ok(u5(0x13)),
             '5' => Ok(u5(0x14)),
             '4' => Ok(u5(0x15)),
-            'k' => Ok(u5(0x16)),
-            'h' => Ok(u5(0x17)),
-            'c' => Ok(u5(0x18)),
-            'e' => Ok(u5(0x19)),
+            'k' | 'K' => Ok(u5(0x16)),
+            'h' | 'H' => Ok(u5(0x17)),
+            'c' | 'C' => Ok(u5(0x18)),
+            'e' | 'E' => Ok(u5(0x19)),
             '6' => Ok(u5(0x1a)),
-            'm' => Ok(u5(0x1b)),
-            'u' => Ok(u5(0x1c)),
-            'a' => Ok(u5(0x1d)),
+            'm' | 'M' => Ok(u5(0x1b)),
+            'u' | 'U' => Ok(u5(0x1c)),
+            'a' | 'A' => Ok(u5(0x1d)),
             '7' => Ok(u5(0x1e)),
-            'l' => Ok(u5(0x1f)),
+            'l' | 'L' => Ok(u5(0x1f)),
             x => Err(format!("invalid bech32 character {}", x)),
         }
     }
@@ -83,6 +83,12 @@ impl fmt::Debug for u5 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let idx: usize = self.0.into();
         write!(f, "{}[{:05b}]", CHARSET[idx] as char, self.0)
+    }
+}
+
+impl From<u5> for u8 {
+    fn from(u: u5) -> u8 {
+        u.0
     }
 }
 
@@ -157,7 +163,7 @@ impl u5String {
         // Expand the HRP into base 32
         let mut res = Vec::with_capacity(hrp.len() * 2 + 1 + real_string.len());
         for ch in hrp.bytes() {
-            res.push(u5(ch >> 5));
+            res.push(u5(ch.to_ascii_lowercase() >> 5));
         }
         res.push(u5(0));
         for ch in hrp.bytes() {
@@ -187,6 +193,33 @@ impl u5String {
     /// Return whether or not this string contains only 0 characters
     pub fn is_all_zero(&self) -> bool {
         self.0.iter().all(|ch| *ch == u5(0))
+    }
+
+    /// Converts the string to a bytestring
+    ///
+    /// If there are not a multiple-of-8 number of bits, pad on the right (LSB
+    /// of final byte) with 0s
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut ret = vec![];
+        let mut next_byte = 0;
+        for (i, ch) in self.0.iter().copied().enumerate() {
+            let rem = (i * 5) % 8;
+            if rem < 3 {
+                // If we are within 3 bits of the start we can fit the whole next char in
+                next_byte |= ch.0 << (3 - rem);
+            } else if rem == 3 {
+                // If we are exactly 3 bits from the start then this char fills in the byte
+                ret.push(next_byte | ch.0);
+                next_byte = 0;
+            } else {
+                // Otherwise we have to break it in two
+                let overshoot = rem - 3;
+                assert!(overshoot > 0);
+                ret.push(next_byte | (ch.0 >> overshoot));
+                next_byte = (ch.0 & ((1 << overshoot) - 1)) << (8 - overshoot);
+            }
+        }
+        ret
     }
 }
 

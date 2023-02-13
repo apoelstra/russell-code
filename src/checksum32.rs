@@ -157,7 +157,11 @@ impl Checksum {
         // 5. Tack it onto the original string and return
         let mut ret = String::with_capacity(s.len() + checksum.len());
         ret.push_str(s);
-        ret.push_str(&checksum.to_string());
+        ret.push_str(&if s.chars().any(|c| c.is_lowercase()) {
+            checksum.to_string()
+        } else {
+            checksum.to_string().to_uppercase()
+        });
         ret
     }
 
